@@ -1,49 +1,43 @@
 package com.example.sadge
 
-import android.content.Context
-import android.hardware.camera2.CameraManager
-import android.os.Bundle
-import android.view.SurfaceHolder
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.view.View
+import androidx.fragment.app.Fragment
 import com.example.sadge.databinding.ActivityMainBinding
+import com.example.sadge.fragments.CameraFragment
+import com.example.sadge.fragments.GalleryFragment
 
+class MainActivity : AppCompatActivity() {
 
-class MainActivity : AppCompatActivity(), SurfaceHolder.Callback {
-
-    private val binding by lazy { ActivityMainBinding.inflate(layoutInflater)}
-    private val cam by lazy {
-        DepressionUtil(getSystemService(Context.CAMERA_SERVICE) as CameraManager, this)
-    }
-
+    val cameraFragment = CameraFragment()
+    val settingsFragment = SettingsFragment()
+    val galleryFragment = GalleryFragment()
+    private val binding by lazy {ActivityMainBinding.inflate(layoutInflater)}
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        binding.surfaceView.holder.addCallback(this)
-    }
 
-    override fun onResume() {
-        super.onResume()
-        cam.openCamera()
-    }
+        makeCurrentFragment(cameraFragment)
 
-    override fun onPause() {
-        cam.closeCamera()
-        super.onPause()
-    }
 
-    override fun surfaceCreated(holder: SurfaceHolder) {
-        holder.surface?.let { cam.setupPreviewSession(it) }
-    }
-
-    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-    }
-
-    override fun surfaceDestroyed(holder: SurfaceHolder) {
 
     }
+    private fun makeCurrentFragment(fragment: Fragment) =
+        supportFragmentManager.beginTransaction().apply {
+            replace(R.id.holder, fragment)
+            commit()
+        }
 
-    fun click(view: View) {
-        cam.acquire(binding.bruh)
+    fun showCamera(view: View) {
+        makeCurrentFragment(cameraFragment)
+    }
+    fun showGallery(view: View) {
+        makeCurrentFragment(galleryFragment)
+
+    }
+    fun showSettings(view: View) {
+        makeCurrentFragment(settingsFragment)
+
     }
 }
