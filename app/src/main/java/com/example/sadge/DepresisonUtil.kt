@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.graphics.ImageFormat
@@ -79,20 +80,18 @@ class DepressionUtil(
     }
 
     fun openCamera() {
-        if (checkPermission())
-            cameraManager.openCamera(setCameraId(), this, handler)
-        else
+        if (ActivityCompat.
+            checkSelfPermission(activity, Manifest.permission.CAMERA)
+            != PackageManager.PERMISSION_GRANTED
+        )
             requestPermission()
-    }
 
-    private fun checkPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            activity,
-            Manifest.permission.CAMERA
-        ) == PackageManager.PERMISSION_GRANTED
+        cameraManager.openCamera(setCameraId(), this, handler)
+
     }
 
     private fun requestPermission() {
+
         ActivityCompat.requestPermissions(
             activity, arrayOf(Manifest.permission.CAMERA),
             200
