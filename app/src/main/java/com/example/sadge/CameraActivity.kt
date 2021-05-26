@@ -3,11 +3,13 @@ package com.example.sadge
 import android.Manifest
 import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.hardware.camera2.CameraManager
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.SurfaceHolder
 import android.view.View
 import android.widget.ImageView
@@ -19,7 +21,7 @@ import com.example.sadge.databinding.ActivityCameraBinding
 
 class CameraActivity : AppCompatActivity(), SurfaceHolder.Callback {
 
-    private val binding by lazy { ActivityCameraBinding.inflate(layoutInflater)}
+    val binding by lazy { ActivityCameraBinding.inflate(layoutInflater)}
     private lateinit var cam : DepressionUtil
 
 
@@ -31,16 +33,13 @@ class CameraActivity : AppCompatActivity(), SurfaceHolder.Callback {
 
     }
 
-
-
-
     override fun onResume() {
         super.onResume()
         cam.openCamera()
     }
 
     override fun onPause() {
-        cam.closeCamera()
+//        cam.closeCamera()
         super.onPause()
     }
 
@@ -56,21 +55,11 @@ class CameraActivity : AppCompatActivity(), SurfaceHolder.Callback {
     }
 
     fun capture(view: View) {
-        val images = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-            MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-        else
-            MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-        val contentValues = ContentValues().apply {
-            put(MediaStore.Images.Media.DISPLAY_NAME, "obrazek.jpg")
-            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+        cam.acquireDoChuja {
+            val intent = Intent(this,EditingActivity::class.java)
+            intent.putExtra("bitmapka_essa",it)
+            startActivity(intent)
         }
-       applicationContext.contentResolver.run{
-           val imgUri = insert(images, contentValues)
-           imgUri ?: return
-           openOutputStream(imgUri)?.use{
-           }
-       }
-
     }
 
 }
