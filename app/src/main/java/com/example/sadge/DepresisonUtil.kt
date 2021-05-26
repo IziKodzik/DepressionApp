@@ -1,21 +1,24 @@
 package com.example.sadge;
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageFormat
+import android.graphics.Matrix
 import android.hardware.camera2.*
 import android.media.ImageReader
 import android.os.Handler
 import android.os.HandlerThread
-import android.util.Log
 import android.util.Size
 import android.view.Surface
 import android.widget.ImageView
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import java.lang.IllegalStateException
 import java.util.*
 
@@ -37,39 +40,44 @@ class DepressionUtil(
         override fun onConfigureFailed(session: CameraCaptureSession) {}
         override fun onConfigured(session: CameraCaptureSession) {
             surface?.let {
-                val builder = cameraDevice?.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
-                builder?.apply {
-                    addTarget(it)
-                    set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO)
-                    set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON)
-                }?.build()?.also {
-                    session.setRepeatingRequest(it, captureCallback, handler)
+                try {
+                    val builder = cameraDevice?.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
+                    builder?.apply {
+                        addTarget(it)
+                        set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO)
+                        set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON)
+                    }?.build()?.also {
+                        session.setRepeatingRequest(it, captureCallback, handler)
+                    }
+                } catch (ex: IllegalStateException) {
                 }
             }
+
         }
     }
 
+    fun Bitmap.rotate(degrees: Float): Bitmap {
+        val matrix = Matrix().apply { postRotate(degrees) }
+        return Bitmap.createBitmap(this, 0, 0, width, height, matrix, true)
+    }
 
-    inner class StateCallbackForAcquire(
-        private val imageReader: ImageReader,
-        listener: (Bitmap) -> Unit
-    ) : CameraCaptureSession.StateCallback() {
+    inner class StateCallbackForAcquire(private val imageReader: ImageReader) :
+        CameraCaptureSession.StateCallback() {
         init {
             imageReader.setOnImageAvailableListener({
                 val img = it.acquireLatestImage()
                 val buffer = img.planes[0].buffer
                 val bytes = ByteArray(buffer.capacity())
                 buffer.get(bytes)
-                val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                listener(bitmap)
+                var bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                bitmap = bitmap.rotate(90f)
                 it.close()
                 surface?.let { setupPreviewSession(it) }
+                val s = Intent(activity, EditingActivity::class.java)
+                s.putExtra("bitmap", bitmap)
+                activity.startActivity(s)
             }, handler)
 
-        }
-
-        override fun onClosed(session: CameraCaptureSession) {
-            session.close()
         }
 
         override fun onConfigureFailed(session: CameraCaptureSession) {}
@@ -92,7 +100,6 @@ class DepressionUtil(
         cameraManager.openCamera(setCameraId(), this, handler)
 
     }
-
 
     private fun requestPermission() {
 
@@ -118,31 +125,19 @@ class DepressionUtil(
 
     fun setupPreviewSession(surface: Surface) {
         this.surface = surface
-        cameraDevice?.createCaptureSession(
-            listOf(surface),
-            stateCallbackForPreview,
-            handler
-        )
+        try {
+            cameraDevice?.createCaptureSession(
+                listOf(surface),
+                stateCallbackForPreview,
+                handler
+            )
+        } catch (ex: IllegalStateException) {
+
+        }
     }
 
     override fun onOpened(camera: CameraDevice) {
         cameraDevice = camera
-    }
-
-    fun acquireDoChuja(listener: (Bitmap) -> Unit) {
-        Log.i("ss", "sss")
-        val size = characters?.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
-            ?.getOutputSizes(ImageFormat.JPEG)?.get(2)?.let { Size(it.width, it.height) }
-            ?: Size(640, 840)
-        val imageReader = ImageReader.newInstance(size.width, size.height, ImageFormat.JPEG, 1)
-
-        cameraDevice?.createCaptureSession(
-            listOf(imageReader.surface),
-            StateCallbackForAcquire(imageReader, listener),
-            handler
-        )
-
-
     }
 
     fun acquire() {
@@ -150,29 +145,19 @@ class DepressionUtil(
             ?.getOutputSizes(ImageFormat.JPEG)?.get(2)?.let { Size(it.width, it.height) }
             ?: Size(640, 840)
         val imageReader = ImageReader.newInstance(size.width, size.height, ImageFormat.JPEG, 1)
-        Log.i("s", "s")
-        val img = imageReader.acquireLatestImage()?.let {
-            val buffer = it.planes[0].buffer
-            Log.i("wws", "wws")
-            val bytes = ByteArray(buffer.capacity())
-            buffer.get(bytes)
-            val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-            val intent = Intent(activity, EditingActivity::class.java)
-            Log.i("qweasd", bitmap.toString())
-            intent.putExtra("bitmapka_essa", bitmap)
-            activity.startActivity(Intent(activity, EditingActivity::class.java))
-            imageReader.close()
-        }
-
+        cameraDevice?.createCaptureSession(
+            listOf(imageReader.surface),
+            StateCallbackForAcquire(imageReader),
+            handler
+        )
     }
+
 
     override fun onDisconnected(camera: CameraDevice) {
         cameraDevice = null
     }
 
-    override fun onError(camera: CameraDevice, error: Int) {
-        activity.finish()
-    }
+    override fun onError(camera: CameraDevice, error: Int) {}
 }
 
 
