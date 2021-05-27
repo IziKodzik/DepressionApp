@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.sadge.databinding.ActivityMainBinding
 import com.example.sadge.fragments.GalleryFragment
+import com.google.android.gms.location.LocationServices
 
 class MainActivity : AppCompatActivity() {
 

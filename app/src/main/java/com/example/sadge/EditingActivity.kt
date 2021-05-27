@@ -14,7 +14,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.sadge.databinding.ActivityEditingBinding
 import com.google.android.gms.location.LocationServices
-import java.io.IOException
 import java.util.*
 
 
@@ -24,30 +23,34 @@ class EditingActivity : AppCompatActivity() {
     private val locMan by lazy { getSystemService(LocationManager::class.java) }
     private val locClient by lazy { LocationServices.getFusedLocationProviderClient(this) }
     private val geofencingClient by lazy { LocationServices.getGeofencingClient(this) }
+    private lateinit var bitmap: Bitmap
+    private lateinit var location:Location
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        oldGetLoc()
+        getLoc()
 
         val bitmap = intent.extras?.get("bitmap") as Bitmap
-        val loc = oldGetLoc()
-        Thread {
-            binding.paint.mBitmap = bitmap
-            binding.paint.text = loc?.let {
-                Log.i("locacaca",it.latitude.toString())
-                Log.i("locacaca",it.longitude.toString())
-                locToCity(it)
-            }
-            binding.paint.invalidate()
-        }.start()
-
+        this.bitmap = bitmap
+        binding.paint.mBitmap = bitmap
+//        val loc = oldGetLoc()
+//        Thread {
+//            binding.paint.mBitmap = bitmap
+//            binding.paint.text = loc?.let {
+//                Log.i("locacaca",it.latitude.toString())
+//                Log.i("locacaca",it.longitude.toString())
+//                locToCity(it)
+//            }
+//            binding.paint.invalidate()
+//        }.start()
+        getLoc()
 
 
     }
 
 
-    fun newGetLoc() {
+    fun getLoc() {
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -58,40 +61,7 @@ class EditingActivity : AppCompatActivity() {
         ) {
             return
         }
-        locClient.lastLocation
-            .addOnSuccessListener { loc: Location? ->
-                loc?.let {
-                }
-            }
-    }
-    fun locToCity(loc: Location): String? {
-        val gcd = Geocoder(this, Locale.getDefault())
-            val addresses: List<Address> = gcd.getFromLocation(loc.latitude, loc.longitude, 1)
-            return if (addresses.isNotEmpty()) {
-                addresses[0].locality
-            }else {
-                null
-            }
-
-
-    }
-
-    fun oldGetLoc(): Location? {
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            return null
-        } else {
-            val c = Criteria().apply {
-                accuracy = Criteria.ACCURACY_FINE
-            }
-            val best = locMan.getBestProvider(c, true) ?: ""
-            locMan.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+        locMan.requestLocationUpdates(LocationManager.GPS_PROVIDER,
                 0, 0f, object : LocationListener {
                     override fun onLocationChanged(location: Location) {
                     }
@@ -111,12 +81,73 @@ class EditingActivity : AppCompatActivity() {
 
                 }
             )
-            return locMan.getLastKnownLocation(best)
-
-        }
+        locClient.lastLocation
+            .addOnSuccessListener { loci: Location? ->
+                loci?.let {
+                    Thread {
+                        location = loci
+                        binding.paint.text = locToCity(loci)
+                        binding.paint.invalidate()
+                    }.start()
+                }
+            }
     }
 
+    fun locToCity(loc: Location): String? {
+        val gcd = Geocoder(this, Locale.getDefault())
+        val addresses: List<Address> = gcd.getFromLocation(loc.latitude, loc.longitude, 1)
+        return if (addresses.isNotEmpty()) {
+            addresses[0].locality
+        } else {
+            null
+        }
+
+
+    }
+
+//    fun oldGetLoc(): Location? {
+//        if (ActivityCompat.checkSelfPermission(
+//                this,
+//                Manifest.permission.ACCESS_FINE_LOCATION
+//            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+//                this,
+//                Manifest.permission.ACCESS_COARSE_LOCATION
+//            ) != PackageManager.PERMISSION_GRANTED
+//        ) {
+//            return null
+//        } else {
+//            val c = Criteria().apply {
+//                accuracy = Criteria.ACCURACY_FINE
+//            }
+//            val best = locMan.getBestProvider(c, true) ?: ""
+//            locMan.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+//                0, 0f, object : LocationListener {
+//                    override fun onLocationChanged(location: Location) {
+//                    }
+//
+//                    override fun onStatusChanged(
+//                        provider: String?,
+//                        status: Int,
+//                        extras: Bundle?
+//                    ) {
+//                    }
+//
+//                    override fun onProviderEnabled(provider: String) {
+//                    }
+//
+//                    override fun onProviderDisabled(provider: String) {
+//                    }
+//
+//                }
+//            )
+//            return locMan.getLastKnownLocation(best)
+//
+//        }
+//    }
+
     fun savePhoto(view: View) {
+
+        Log.i("location", location.toString())
         val images = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
             MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
         else
