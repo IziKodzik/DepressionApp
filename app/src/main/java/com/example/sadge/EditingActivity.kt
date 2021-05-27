@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.sadge.databinding.ActivityEditingBinding
 import com.google.android.gms.location.LocationServices
+import java.io.IOException
 import java.util.*
 
 
@@ -30,29 +31,49 @@ class EditingActivity : AppCompatActivity() {
         oldGetLoc()
 
         val bitmap = intent.extras?.get("bitmap") as Bitmap
-        Log.i("aa", bitmap.width.toString())
-        Log.i("ss", bitmap.height.toString())
-        binding.paint.mBitmap = bitmap
-        binding.paint.text = oldGetLoc()?.let { locToCity(it) }
+        val loc = oldGetLoc()
+        Thread {
+            binding.paint.mBitmap = bitmap
+            binding.paint.text = loc?.let {
+                Log.i("locacaca",it.latitude.toString())
+                Log.i("locacaca",it.longitude.toString())
+                locToCity(it)
+            }
+            binding.paint.invalidate()
+        }.start()
+
+
+
     }
 
-    //    @SuppressLint("MissingPermission")
-//    fun newGetLoc() {
-//        Log.i("beniz", "TFTF")
-//
-//        locClient.lastLocation
-//            .addOnSuccessListener { loc: Location? ->
-//                loc?.let {
-//                }
-//            }
-//    }
+
+    fun newGetLoc() {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+        locClient.lastLocation
+            .addOnSuccessListener { loc: Location? ->
+                loc?.let {
+                }
+            }
+    }
     fun locToCity(loc: Location): String? {
         val gcd = Geocoder(this, Locale.getDefault())
-        val addresses: List<Address> = gcd.getFromLocation(loc.latitude, loc.longitude, 1)
-        if (addresses.isNotEmpty()) {
-            return addresses[0].locality
-        }
-        return null
+            val addresses: List<Address> = gcd.getFromLocation(loc.latitude, loc.longitude, 1)
+            return if (addresses.isNotEmpty()) {
+                addresses[0].locality
+            }else {
+                null
+            }
+
+
     }
 
     fun oldGetLoc(): Location? {

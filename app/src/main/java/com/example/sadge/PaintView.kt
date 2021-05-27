@@ -21,18 +21,17 @@ class PaintView(
     override fun onDraw(canvas: Canvas?) {
         canvas ?: return
 
-        mBitmap.let {
-            mBitmap = Bitmap.createScaledBitmap(it, width, height, true)
-            val paint = Paint(Color.GRAY)
-            canvas.drawBitmap(mBitmap, 0f, 0f, paint)
-            val buff = Canvas(mBitmap)
-            paint.strokeWidth = 10f
-            paint.textSize = 100f
-            buff.drawText(text ?: "Unknown", width / 3f, height - height / 4f, paint)
-            canvas.drawText(text ?: "Unknown", width / 3f, height - height / 4f, paint)
+
+        mBitmap = Bitmap.createScaledBitmap(mBitmap, width, height, true)
+        val paint = Paint(Color.GRAY)
+        canvas.drawBitmap(mBitmap, 0f, 0f, paint)
+        val buff = Canvas(mBitmap)
+        paint.strokeWidth = 10f
+        paint.textSize = 100f
+        text?.let {
+            buff.drawText(it, width / 3f, height - height / 4f, paint)
+            canvas.drawText(it, width / 3f, height - height / 4f, paint)
         }
-
-
     }
 
     fun loadBitmapFromView(): Bitmap {
