@@ -1,6 +1,8 @@
 package com.example.sadge
 
 import android.Manifest
+import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.Manifest.permission.CAMERA
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -29,13 +31,20 @@ class CameraActivity : AppCompatActivity(), SurfaceHolder.Callback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        binding.surfaceView.holder.addCallback(this)
         cam = DepressionUtil(getSystemService(Context.CAMERA_SERVICE) as CameraManager, this)
+        cam.openCamera()
+        binding.surfaceView.holder.addCallback(this)
 
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
 
-
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    }
 
     override fun onResume() {
         super.onResume()
@@ -59,6 +68,7 @@ class CameraActivity : AppCompatActivity(), SurfaceHolder.Callback {
     }
 
     fun capture(view: View) {
+
         cam.acquire()
 
     }

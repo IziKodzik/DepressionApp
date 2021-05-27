@@ -1,6 +1,7 @@
 package com.example.sadge;
 
 import android.Manifest
+import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
@@ -14,6 +15,7 @@ import android.hardware.camera2.*
 import android.media.ImageReader
 import android.os.Handler
 import android.os.HandlerThread
+import android.util.Log
 import android.util.Size
 import android.view.Surface
 import android.widget.ImageView
@@ -26,7 +28,9 @@ import java.util.*
 class DepressionUtil(
     private val cameraManager: CameraManager,
     private val activity: Activity
+
 ) : CameraDevice.StateCallback() {
+
 
     private val thread by lazy { HandlerThread("CameraInit").apply { start() } }
     val handler by lazy { Handler(thread.looper) }
@@ -91,20 +95,21 @@ class DepressionUtil(
         }
     }
 
+
     fun openCamera() {
         if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.CAMERA)
             != PackageManager.PERMISSION_GRANTED
         )
-            requestPermission()
-
-        cameraManager.openCamera(setCameraId(), this, handler)
+            requestPermission(Manifest.permission.CAMERA)
+            cameraManager.openCamera(setCameraId(), this, handler)
 
     }
 
-    private fun requestPermission() {
+
+    private fun requestPermission(perm: String) {
 
         ActivityCompat.requestPermissions(
-            activity, arrayOf(Manifest.permission.CAMERA),
+            activity, arrayOf(perm),
             200
         )
     }
@@ -119,7 +124,7 @@ class DepressionUtil(
             if (characters?.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK)
                 return cameraId
         }
-        throw IllegalStateException("Cdnt set camera id")
+        throw IllegalStateException("Could not set camera id")
 
     }
 
@@ -141,6 +146,7 @@ class DepressionUtil(
     }
 
     fun acquire() {
+
         val size = characters?.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
             ?.getOutputSizes(ImageFormat.JPEG)?.get(2)?.let { Size(it.width, it.height) }
             ?: Size(640, 840)
