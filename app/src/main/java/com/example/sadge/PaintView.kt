@@ -6,8 +6,11 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.os.Build
 import android.util.AttributeSet
 import android.view.View
+import androidx.annotation.RequiresApi
+import java.time.LocalDate
 
 class PaintView(
     context: Context,
@@ -17,6 +20,7 @@ class PaintView(
     lateinit var mBitmap: Bitmap
     var text: String? = null
 
+    @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas?) {
         canvas ?: return
@@ -27,10 +31,10 @@ class PaintView(
         canvas.drawBitmap(mBitmap, 0f, 0f, paint)
         val buff = Canvas(mBitmap)
         paint.strokeWidth = 10f
-        paint.textSize = 100f
+        paint.textSize = 60f
         text?.let {
-            buff.drawText(it, width / 3f, height - height / 4f, paint)
-            canvas.drawText(it, width / 3f, height - height / 4f, paint)
+            buff.drawText(it, 10f, height - height / 4f, paint)
+            canvas.drawText(it, 10f, height - height / 4f, paint)
         }
     }
 

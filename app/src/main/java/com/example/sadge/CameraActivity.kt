@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.hardware.camera2.CameraManager
+import android.location.Location
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
@@ -20,6 +21,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.drawToBitmap
 import com.example.sadge.databinding.ActivityCameraBinding
+import com.google.android.gms.location.LocationServices
 
 
 class CameraActivity : AppCompatActivity(), SurfaceHolder.Callback {
@@ -30,6 +32,10 @@ class CameraActivity : AppCompatActivity(), SurfaceHolder.Callback {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if(checkSelfPermission(ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+            requestPermissions(arrayOf(ACCESS_FINE_LOCATION),1)
+        if(checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED)
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),1)
         setContentView(binding.root)
         cam = DepressionUtil(getSystemService(Context.CAMERA_SERVICE) as CameraManager, this)
         cam.openCamera()
@@ -45,6 +51,8 @@ class CameraActivity : AppCompatActivity(), SurfaceHolder.Callback {
 
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
+
+
 
     override fun onResume() {
         super.onResume()

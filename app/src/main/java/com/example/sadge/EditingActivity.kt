@@ -1,7 +1,11 @@
 package com.example.sadge
 
 import android.Manifest
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.app.PendingIntent
 import android.content.ContentValues
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.location.*
@@ -10,88 +14,67 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.sadge.databinding.ActivityEditingBinding
+import com.google.android.gms.location.Geofence
+import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.location.LocationServices
+import java.time.LocalDate
 import java.util.*
 
 
 class EditingActivity : AppCompatActivity() {
 
     private val binding by lazy { ActivityEditingBinding.inflate(layoutInflater) }
-    private val locMan by lazy { getSystemService(LocationManager::class.java) }
-    private val locClient by lazy { LocationServices.getFusedLocationProviderClient(this) }
-    private val geofencingClient by lazy { LocationServices.getGeofencingClient(this) }
     private lateinit var bitmap: Bitmap
-    private lateinit var location:Location
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        getLoc()
 
         val bitmap = intent.extras?.get("bitmap") as Bitmap
         this.bitmap = bitmap
         binding.paint.mBitmap = bitmap
-//        val loc = oldGetLoc()
-//        Thread {
-//            binding.paint.mBitmap = bitmap
-//            binding.paint.text = loc?.let {
-//                Log.i("locacaca",it.latitude.toString())
-//                Log.i("locacaca",it.longitude.toString())
-//                locToCity(it)
-//            }
-//            binding.paint.invalidate()
-//        }.start()
-        getLoc()
-
-
+        Shared.location?.let{
+            Thread{
+                binding.paint.text = locToCity(it) + "\n" + LocalDate.now()
+                binding.paint.invalidate()
+            }.start()
+        }
     }
 
-
-    fun getLoc() {
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            return
-        }
-        locMan.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                0, 0f, object : LocationListener {
-                    override fun onLocationChanged(location: Location) {
-                    }
-
-                    override fun onStatusChanged(
-                        provider: String?,
-                        status: Int,
-                        extras: Bundle?
-                    ) {
-                    }
-
-                    override fun onProviderEnabled(provider: String) {
-                    }
-
-                    override fun onProviderDisabled(provider: String) {
-                    }
-
-                }
-            )
-        locClient.lastLocation
-            .addOnSuccessListener { loci: Location? ->
-                loci?.let {
-                    Thread {
-                        location = loci
-                        binding.paint.text = locToCity(loci)
-                        binding.paint.invalidate()
-                    }.start()
-                }
+    @RequiresApi(Build.VERSION_CODES.O)
+    @SuppressLint("MissingPermission")
+    private fun addGeofence(loci: Location){
+        val pi = PendingIntent.getBroadcast(
+            applicationContext,
+            1,
+            Intent(this, BroReceiver::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        LocationServices.getGeofencingClient(this)
+            .addGeofences(
+                generateRequest(loci), pi
+            ).addOnSuccessListener {
+                Log.i("Geof", "Geofence added")
             }
     }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun generateRequest(loci: Location): GeofencingRequest {
+        val mordo = Geofence.Builder().setExpirationDuration(Geofence.NEVER_EXPIRE)
+            .setRequestId(LocalDate.now().toString())
+            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_EXIT)
+            .setCircularRegion(loci.latitude, loci.longitude, 60f).build()
+        return GeofencingRequest.Builder()
+            .addGeofence(mordo)
+            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+            .build()
+    }
+
 
     fun locToCity(loc: Location): String? {
         val gcd = Geocoder(this, Locale.getDefault())
@@ -104,50 +87,9 @@ class EditingActivity : AppCompatActivity() {
 
 
     }
-
-//    fun oldGetLoc(): Location? {
-//        if (ActivityCompat.checkSelfPermission(
-//                this,
-//                Manifest.permission.ACCESS_FINE_LOCATION
-//            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-//                this,
-//                Manifest.permission.ACCESS_COARSE_LOCATION
-//            ) != PackageManager.PERMISSION_GRANTED
-//        ) {
-//            return null
-//        } else {
-//            val c = Criteria().apply {
-//                accuracy = Criteria.ACCURACY_FINE
-//            }
-//            val best = locMan.getBestProvider(c, true) ?: ""
-//            locMan.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-//                0, 0f, object : LocationListener {
-//                    override fun onLocationChanged(location: Location) {
-//                    }
-//
-//                    override fun onStatusChanged(
-//                        provider: String?,
-//                        status: Int,
-//                        extras: Bundle?
-//                    ) {
-//                    }
-//
-//                    override fun onProviderEnabled(provider: String) {
-//                    }
-//
-//                    override fun onProviderDisabled(provider: String) {
-//                    }
-//
-//                }
-//            )
-//            return locMan.getLastKnownLocation(best)
-//
-//        }
-//    }
-
+    @RequiresApi(Build.VERSION_CODES.O)
     fun savePhoto(view: View) {
 
-        Log.i("location", location.toString())
         val images = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
             MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
         else
@@ -155,6 +97,9 @@ class EditingActivity : AppCompatActivity() {
         val contentValues = ContentValues().apply {
             put(MediaStore.Images.Media.DISPLAY_NAME, "obrazek.jpg")
             put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+        }
+        Shared.location?.let {
+            addGeofence(it)
         }
         contentResolver.run {
             val imgUri = insert(images, contentValues)
