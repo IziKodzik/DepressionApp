@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Looper
 import android.view.View
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -26,26 +27,26 @@ class MainActivity : AppCompatActivity() {
 
     private val settingsFragment = SettingsFragment()
     private val galleryFragment = GalleryFragment()
-    private val binding by lazy {ActivityMainBinding.inflate(layoutInflater)}
+    private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
+
+    //    private val geofencingClient by lazy { LocationServices.getGeofencingClient(this) }
     private val locClient by lazy { LocationServices.getFusedLocationProviderClient(this) }
-    private val geofencingClient by lazy { LocationServices.getGeofencingClient(this) }
+    private fun requestLoc(){
 
-
-    fun requestLoc(){
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
         val request = LocationRequest.create().apply {
             fastestInterval = 500L
             interval = 1000L
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        }
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            return
         }
         locClient.requestLocationUpdates(request,object : LocationCallback() {
             override fun onLocationResult(p0: LocationResult) {
@@ -54,12 +55,13 @@ class MainActivity : AppCompatActivity() {
             } }, Looper.getMainLooper())
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         makeCurrentFragment(galleryFragment)
-        if(checkSelfPermission(CAMERA) != PackageManager.PERMISSION_GRANTED)
-            requestPermissions(arrayOf(CAMERA, ACCESS_FINE_LOCATION),1)
+        if (checkSelfPermission(CAMERA) != PackageManager.PERMISSION_GRANTED)
+            requestPermissions(arrayOf(CAMERA, ACCESS_FINE_LOCATION), 1)
         else
             requestLoc()
 
@@ -76,22 +78,25 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(this, CameraActivity::class.java)
         startActivity(intent)
     }
+
     fun showGallery(view: View) {
         makeCurrentFragment(galleryFragment)
 
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        if(requestCode == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            requestLoc()
+        if (requestCode == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            startForegroundService(Intent(this, RequestLocationService::class.java))
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
     }
+
     fun showSettings(view: View) {
         makeCurrentFragment(settingsFragment)
 

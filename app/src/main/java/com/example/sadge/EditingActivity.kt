@@ -38,8 +38,8 @@ class EditingActivity : AppCompatActivity() {
         val bitmap = intent.extras?.get("bitmap") as Bitmap
         this.bitmap = bitmap
         binding.paint.mBitmap = bitmap
-        Shared.location?.let{
-            Thread{
+        Shared.location?.let {
+            Thread {
                 binding.paint.text = locToCity(it) + "\n" + LocalDate.now()
                 binding.paint.invalidate()
             }.start()
@@ -48,7 +48,7 @@ class EditingActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("MissingPermission")
-    private fun addGeofence(loci: Location){
+    private fun addGeofence(loci: Location) {
         val pi = PendingIntent.getBroadcast(
             applicationContext,
             1,
@@ -68,7 +68,7 @@ class EditingActivity : AppCompatActivity() {
         val mordo = Geofence.Builder().setExpirationDuration(Geofence.NEVER_EXPIRE)
             .setRequestId(LocalDate.now().toString())
             .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_EXIT)
-            .setCircularRegion(loci.latitude, loci.longitude, 60f).build()
+            .setCircularRegion(loci.latitude, loci.longitude, 500f).build()
         return GeofencingRequest.Builder()
             .addGeofence(mordo)
             .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
@@ -76,17 +76,15 @@ class EditingActivity : AppCompatActivity() {
     }
 
 
-    fun locToCity(loc: Location): String? {
-        val gcd = Geocoder(this, Locale.getDefault())
-        val addresses: List<Address> = gcd.getFromLocation(loc.latitude, loc.longitude, 1)
-        return if (addresses.isNotEmpty()) {
-            addresses[0].locality
-        } else {
-            null
+    private fun locToCity(loc: Location): String? {
+        if (Geocoder.isPresent()) {
+            return Geocoder(this)
+                .getFromLocation(loc.latitude, loc.longitude, 1)[0].locality
         }
-
-
+        return null
     }
+
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun savePhoto(view: View) {
 
