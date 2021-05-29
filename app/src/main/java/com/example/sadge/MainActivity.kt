@@ -69,11 +69,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         Shared.db = AppDatabase.open(applicationContext)
         setupRecycler()
-        picAdapter.refresh()
         if (checkSelfPermission(CAMERA) != PackageManager.PERMISSION_GRANTED)
             requestPermissions(arrayOf(CAMERA, ACCESS_FINE_LOCATION), 1)
         else
             requestLoc()
+        picAdapter.refresh(this)
 
     }
 
@@ -85,7 +85,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupRecycler() {
         val recycler = binding.recyclerView
-//        recycler.layoutManager = GridLayoutManager(this,4)
         binding.recyclerView.apply{
             adapter = picAdapter
             layoutManager = GridLayoutManager(context,4)
@@ -97,6 +96,7 @@ class MainActivity : AppCompatActivity() {
             Log.i("Kill me please i want to die", Shared.db?.pics?.selectAll().toString())
         }
         super.onResume()
+        picAdapter.refresh(this)
 
     }
 

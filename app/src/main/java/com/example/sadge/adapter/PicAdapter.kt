@@ -2,9 +2,11 @@ package com.example.sadge.adapter
 
 import android.content.Context
 import android.graphics.BitmapFactory
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.os.HandlerCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.sadge.R
 import com.example.sadge.Shared
@@ -14,7 +16,8 @@ import kotlin.concurrent.thread
 
 class PicAdapter(val context: Context) : RecyclerView.Adapter<ItemHolder>() {
 
-    var pics = arrayListOf<Pic>()
+    private var pics: List<Pic> = arrayListOf()
+    private val handeler = HandlerCompat.createAsync(Looper.getMainLooper())
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder {
         val binding = ListItemBinding.inflate(
@@ -29,21 +32,13 @@ class PicAdapter(val context: Context) : RecyclerView.Adapter<ItemHolder>() {
         holder.bind(pics[position])
     }
 
-    fun refresh() {
-        thread {
-            val data = Shared.db?.pics?.selectAll()
-            data?.forEach {
-                Log.i("japierdole","/storage/emulated/0/Pictures/${it.date}.jpg")
-                this.pics.add(
-                    Pic(
-                        it.note, it.lon, it.lat,
-                        BitmapFactory.decodeFile(  "/storage/emulated/0/Pictures/${it.date}.jpg")
-                    )
-                )
-            }
-        }
+    fun refresh(context: Context) = thread {
+       Shared.db?.let{it.pics.selectAll() }?.map{it.toPic()}?.also{
+           pics = it
+           handeler.post{  notifyDataSetChanged()}
 
-        notifyDataSetChanged()
+       }
+
 
     }
 
