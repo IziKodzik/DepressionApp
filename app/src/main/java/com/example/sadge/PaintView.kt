@@ -32,10 +32,15 @@ class PaintView(
         val buff = Canvas(mBitmap)
         paint.strokeWidth = 10f
         paint.textSize = 60f
+
         text?.let {
             buff.drawText(it, 10f, height - height / 4f, paint)
             canvas.drawText(it, 10f, height - height / 4f, paint)
+
         }
+        val date = LocalDate.now().toString()
+        buff.drawText( date, 10f,  height - height / 4f + 30f + 100f,paint)
+
     }
 
     fun loadBitmapFromView(): Bitmap {
