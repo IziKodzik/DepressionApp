@@ -12,6 +12,7 @@ import android.hardware.camera2.*
 import android.media.ImageReader
 import android.os.Handler
 import android.os.HandlerThread
+import android.util.Log
 import android.util.Size
 import android.view.Surface
 import androidx.core.app.ActivityCompat
@@ -39,9 +40,10 @@ class DepressionUtil(
         override fun onConfigured(session: CameraCaptureSession) {
             surface?.let {
                 try {
-                    val builder = cameraDevice?.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
+                    val builder = cameraDevice?.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
                     builder?.apply {
                         addTarget(it)
+                        set(CaptureRequest.JPEG_QUALITY,100)
                         set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO)
                         set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON)
                     }?.build()?.also {
@@ -72,7 +74,8 @@ class DepressionUtil(
                 it.close()
                 surface?.let { setupPreviewSession(it) }
                 val s = Intent(activity, EditingActivity::class.java)
-                s.putExtra("bitmap", bitmap)
+                Shared.lastBitmap = bitmap
+//                s.putExtra("bitmap", bitmap)
                 activity.startActivity(s)
             }, handler)
 
@@ -83,6 +86,7 @@ class DepressionUtil(
             val builder = cameraDevice?.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
             builder?.apply {
                 addTarget(imageReader.surface)
+                set(CaptureRequest.JPEG_QUALITY,100)
                 set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO)
                 set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON)
             }?.build()?.also { session.capture(it, captureCallback, handler) }
@@ -92,21 +96,12 @@ class DepressionUtil(
 
     fun openCamera() {
         if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.CAMERA)
-            != PackageManager.PERMISSION_GRANTED
+            == PackageManager.PERMISSION_GRANTED
         )
-            requestPermission(Manifest.permission.CAMERA)
             cameraManager.openCamera(setCameraId(), this, handler)
 
     }
 
-
-    private fun requestPermission(perm: String) {
-
-        ActivityCompat.requestPermissions(
-            activity, arrayOf(perm),
-            200
-        )
-    }
 
     fun closeCamera() {
         cameraDevice?.close()
@@ -141,10 +136,7 @@ class DepressionUtil(
 
     fun acquire() {
 
-        val size = characters?.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
-            ?.getOutputSizes(ImageFormat.JPEG)?.get(2)?.let { Size(it.width, it.height) }
-            ?: Size(640, 840)
-        val imageReader = ImageReader.newInstance(size.width, size.height, ImageFormat.JPEG, 1)
+        val imageReader = ImageReader.newInstance(1280,1680, ImageFormat.JPEG, 1)
         cameraDevice?.createCaptureSession(
             listOf(imageReader.surface),
             StateCallbackForAcquire(imageReader),

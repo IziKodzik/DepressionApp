@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
 
     //    private val geofencingClient by lazy { LocationServices.getGeofencingClient(this) }
     private val locClient by lazy { LocationServices.getFusedLocationProviderClient(this) }
-    private val picAdapter by lazy { PicAdapter(this)}
+    private val picAdapter by lazy { PicAdapter(this) }
     private fun requestLoc() {
 
         if (ActivityCompat.checkSelfPermission(
@@ -63,11 +63,24 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         Shared.db = AppDatabase.open(applicationContext)
         setupRecycler()
-        if (checkSelfPermission(CAMERA) != PackageManager.PERMISSION_GRANTED)
-            requestPermissions(arrayOf(CAMERA, ACCESS_FINE_LOCATION), 1)
-        else
+        if (checkSelfPermission(CAMERA) != PackageManager.PERMISSION_GRANTED ||
+            checkSelfPermission(ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
+            checkSelfPermission(READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
+            checkSelfPermission(WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
+            checkSelfPermission(ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED
+        ){
+            binding.buttonCamera.isClickable = false
+
+            requestPermissions(
+                arrayOf(
+                    CAMERA, ACCESS_FINE_LOCATION, READ_EXTERNAL_STORAGE,
+                    WRITE_EXTERNAL_STORAGE
+                ), 1
+            )
+        }else{
             requestLoc()
-        picAdapter.refresh(this)
+            picAdapter.refresh(this)
+        }
         thread {
             Shared.settings = Shared.db?.pics?.selectDefaultSettings()
         }
@@ -80,17 +93,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupRecycler() {
-        val recycler = binding.recyclerView
-        binding.recyclerView.apply{
+        binding.recyclerView.apply {
             adapter = picAdapter
-            layoutManager = GridLayoutManager(context,4)
+            layoutManager = GridLayoutManager(context, 4)
         }
     }
 
     override fun onResume() {
-        thread {
-            Log.i("Kill me please i want to die", Shared.db?.pics?.selectAll().toString())
-        }
         super.onResume()
         picAdapter.refresh(this)
 
@@ -102,9 +111,12 @@ class MainActivity : AppCompatActivity() {
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
+        if(PackageManager.PERMISSION_DENIED !in grantResults) {
+            binding.buttonCamera.isClickable = true
+            requestLoc()
+            requestPermissions(arrayOf(ACCESS_BACKGROUND_LOCATION),2)
+        }
     }
 
     fun showSettings(view: View) {

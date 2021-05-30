@@ -37,14 +37,14 @@ class EditingActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         savedLoc = Shared.location
-        val bitmap = intent.extras?.get("bitmap") as Bitmap
-        this.bitmap = bitmap
-        binding.paint.mBitmap = bitmap
-
-        savedLoc?.let {
-            thread {
-                binding.paint.text = locToFancy(it)
-                binding.paint.invalidate()
+        val bitmap = Shared.lastBitmap?.let { //intent.extras?.get("bitmap") as Bitmap
+            this.bitmap = it
+            binding.paint.mBitmap = it
+            savedLoc?.let {
+                thread {
+                    binding.paint.text = locToFancy(it)
+                    binding.paint.invalidate()
+                }
             }
         }
     }

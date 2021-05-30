@@ -20,10 +20,6 @@ class CameraActivity : AppCompatActivity(), SurfaceHolder.Callback {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if(checkSelfPermission(ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-            requestPermissions(arrayOf(ACCESS_FINE_LOCATION),1)
-        if(checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED)
-            requestPermissions(arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),1)
         setContentView(binding.root)
         cam = DepressionUtil(getSystemService(CAMERA_SERVICE) as CameraManager, this)
         cam.openCamera()

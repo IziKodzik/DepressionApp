@@ -24,8 +24,6 @@ class PaintView(
     @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas?) {
         canvas ?: return
-
-
         mBitmap = Bitmap.createScaledBitmap(mBitmap, width, height, true)
         val paint = Paint(Color.GRAY)
         canvas.drawBitmap(mBitmap, 0f, 0f, paint)
@@ -39,9 +37,10 @@ class PaintView(
         paint.color = col
         text?.let {
             buff.drawText(it, 10f, height / 4f, paint)
+            val date = LocalDate.now().toString()
+            buff.drawText( date, 10f,  height - height / 4f + 30f + 100f,paint)
         }
-        val date = LocalDate.now().toString()
-        buff.drawText( date, 10f,  height - height / 4f + 30f + 100f,paint)
+
 
     }
 
