@@ -1,10 +1,7 @@
 package com.example.sadge;
 
 import android.Manifest
-import android.Manifest.permission.ACCESS_FINE_LOCATION
-import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -15,14 +12,11 @@ import android.hardware.camera2.*
 import android.media.ImageReader
 import android.os.Handler
 import android.os.HandlerThread
-import android.util.Log
 import android.util.Size
 import android.view.Surface
-import android.widget.ImageView
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
+import com.example.sadge.activity.EditingActivity
 import java.lang.IllegalStateException
-import java.util.*
 
 @Suppress("DEPRECATION")
 class DepressionUtil(

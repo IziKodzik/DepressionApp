@@ -1,9 +1,11 @@
-package com.example.sadge
+package com.example.sadge.activity
 
 import android.graphics.BitmapFactory
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.example.sadge.R
 import com.example.sadge.databinding.ActivityDisplayBinding
+import com.example.sadge.model.PicDto
 
 class DisplayActivity : AppCompatActivity() {
 
@@ -16,7 +18,11 @@ class DisplayActivity : AppCompatActivity() {
             binding.textView2.text = it
         }
         (intent.extras?.get("id") as? String)?.let{
-            binding.imageView2.setImageBitmap(BitmapFactory.decodeFile(  "/storage/emulated/0/Pictures/${it}.jpg"))
+            val b = PicDto.getBitmap(it)
+            if(b != null)
+                binding.imageView2.setImageBitmap(b)
+            else
+                binding.imageView2.setImageDrawable(resources.getDrawable(R.drawable.ic_baseline_no_photography_24))
         }
 
     }

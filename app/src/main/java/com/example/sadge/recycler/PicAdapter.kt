@@ -1,4 +1,4 @@
-package com.example.sadge.adapter
+package com.example.sadge.recycler
 
 import android.content.Context
 import android.content.Intent
@@ -7,7 +7,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.os.HandlerCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.example.sadge.DisplayActivity
+import com.example.sadge.activity.DisplayActivity
 import com.example.sadge.Shared
 import com.example.sadge.databinding.ListItemBinding
 import com.example.sadge.model.PicDto
@@ -38,7 +38,7 @@ class PicAdapter(val context: Context) : RecyclerView.Adapter<ItemHolder>() {
     }
 
     override fun onBindViewHolder(holder: ItemHolder, position: Int) {
-        holder.bind(pics[position])
+        holder.bind(pics[position],context)
     }
 
     fun refresh(context: Context) = thread {

@@ -1,4 +1,4 @@
-package com.example.sadge
+package com.example.sadge.activity
 
 import android.annotation.SuppressLint
 import android.app.PendingIntent
@@ -13,6 +13,8 @@ import android.util.Log
 import android.view.View
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import com.example.sadge.BroReceiver
+import com.example.sadge.Shared
 import com.example.sadge.databinding.ActivityEditingBinding
 import com.example.sadge.model.PicDto
 import com.google.android.gms.location.Geofence

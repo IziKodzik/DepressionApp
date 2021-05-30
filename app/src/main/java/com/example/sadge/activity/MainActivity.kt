@@ -1,13 +1,10 @@
-package com.example.sadge
+package com.example.sadge.activity
 
 import android.Manifest
 import android.Manifest.permission.*
-import android.annotation.SuppressLint
 import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.Location
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -16,18 +13,15 @@ import android.util.Log
 import android.view.View
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.sadge.adapter.PicAdapter
+import com.example.sadge.Shared
+import com.example.sadge.recycler.PicAdapter
 import com.example.sadge.databinding.ActivityMainBinding
 import com.example.sadge.dejtabase.AppDatabase
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
-import javax.security.auth.callback.Callback
 import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {

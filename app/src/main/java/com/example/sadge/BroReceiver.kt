@@ -13,6 +13,8 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import com.example.sadge.activity.DisplayActivity
+import com.example.sadge.activity.MainActivity
 import com.google.android.gms.location.GeofencingEvent
 import kotlin.concurrent.thread
 

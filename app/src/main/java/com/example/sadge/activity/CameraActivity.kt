@@ -1,27 +1,15 @@
-package com.example.sadge
+package com.example.sadge.activity
 
 import android.Manifest
 import android.Manifest.permission.ACCESS_FINE_LOCATION
-import android.Manifest.permission.CAMERA
-import android.content.ContentValues
-import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.hardware.camera2.CameraManager
-import android.location.Location
-import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
 import android.view.SurfaceHolder
 import android.view.View
-import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.core.view.drawToBitmap
+import com.example.sadge.DepressionUtil
 import com.example.sadge.databinding.ActivityCameraBinding
-import com.google.android.gms.location.LocationServices
 
 
 class CameraActivity : AppCompatActivity(), SurfaceHolder.Callback {
@@ -37,7 +25,7 @@ class CameraActivity : AppCompatActivity(), SurfaceHolder.Callback {
         if(checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED)
             requestPermissions(arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),1)
         setContentView(binding.root)
-        cam = DepressionUtil(getSystemService(Context.CAMERA_SERVICE) as CameraManager, this)
+        cam = DepressionUtil(getSystemService(CAMERA_SERVICE) as CameraManager, this)
         cam.openCamera()
         binding.surfaceView.holder.addCallback(this)
 
