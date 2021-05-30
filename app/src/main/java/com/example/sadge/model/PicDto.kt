@@ -22,11 +22,6 @@ data class PicDto(
     ){
     @RequiresApi(Build.VERSION_CODES.O)
     constructor():this(0,0.0,0.0,"", LocalDateTime.now().toString().replace('.','_').replace(":",""))
-
-    fun toPic()= Pic(
-        note, lon, lat,
-        BitmapFactory.decodeFile(  "/storage/emulated/0/Pictures/${date}.jpg")
-    )
 }
 
 

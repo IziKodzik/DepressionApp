@@ -18,4 +18,7 @@ interface PicDao {
     @Query("SELECT * FROM pic WHERE id = :id;" )
     fun selectById(id: Int): PicDto
 
+    @Query("SELECT * FROM pic WHERE date= :date")
+    fun selectByDate(date: String): PicDto
+
 }

@@ -13,13 +13,15 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import com.google.android.gms.location.GeofencingEvent
+import kotlin.concurrent.thread
 
 
 @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 class BroReceiver : BroadcastReceiver() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onReceive(context: Context?, intent: Intent?) {
-        Log.i("f","nibbers")
+        Log.i("f", "nibbers")
         val notificationId = 69
         val notificationManager =
             context?.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -41,13 +43,27 @@ class BroReceiver : BroadcastReceiver() {
             .setContentTitle("Flashback")
             .setContentText("Remember that?")
 
-        val resultIntent = Intent(context, MainActivity::class.java)
-        val stackBuilder: TaskStackBuilder = TaskStackBuilder.create(context)
-        stackBuilder.addParentStack(MainActivity::class.java)
-        stackBuilder.addNextIntent(resultIntent)
-        val resultPendingIntent: PendingIntent =
-            stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
-        builder.setContentIntent(resultPendingIntent)
-        notificationManager.notify(notificationId, builder.build())
+
+        val geoEvent = GeofencingEvent.fromIntent(intent)
+        if (geoEvent.hasError()) {
+            return
+        }
+
+        val trigger = geoEvent.triggeringGeofences[0].requestId
+        Log.i("trig", trigger)
+        thread {
+            Shared.db?.pics?.selectByDate(trigger)?.let {
+                val resultIntent = Intent(context, DisplayActivity::class.java)
+                resultIntent.putExtra("note", it.note)
+                resultIntent.putExtra("id", it.date)
+                val stackBuilder: TaskStackBuilder = TaskStackBuilder.create(context)
+                stackBuilder.addParentStack(MainActivity::class.java)
+                stackBuilder.addNextIntent(resultIntent)
+                val resultPendingIntent: PendingIntent =
+                    stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
+                builder.setContentIntent(resultPendingIntent)
+                notificationManager.notify(notificationId, builder.build())
+            }
+        }
     }
 }

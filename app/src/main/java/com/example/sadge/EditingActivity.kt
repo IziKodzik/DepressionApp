@@ -49,7 +49,7 @@ class EditingActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("MissingPermission")
-    private fun addGeofence(loci: Location) {
+    private fun addGeofence(loci: Location, date:String) {
         val pi = PendingIntent.getBroadcast(
             applicationContext,
             1,
@@ -58,7 +58,7 @@ class EditingActivity : AppCompatActivity() {
         )
         LocationServices.getGeofencingClient(this)
             .addGeofences(
-                generateRequest(loci), pi
+                generateRequest(loci,date), pi
             ).addOnSuccessListener {
                 Log.i("Geof", "Geofence added")
             }
@@ -79,11 +79,11 @@ class EditingActivity : AppCompatActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun generateRequest(loci: Location): GeofencingRequest {
+    private fun generateRequest(loci: Location,date: String): GeofencingRequest {
         val mordo = Geofence.Builder().setExpirationDuration(Geofence.NEVER_EXPIRE)
             .setRequestId(LocalDate.now().toString())
             .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
-            .setCircularRegion(loci.latitude, loci.longitude, 500f).build()
+            .setCircularRegion(loci.latitude, loci.longitude, 500f).setRequestId(date).build()
         return GeofencingRequest.Builder()
             .addGeofence(mordo)
             .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
@@ -125,7 +125,7 @@ class EditingActivity : AppCompatActivity() {
                 }
 
                 savedLoc?.let {
-                    addGeofence(it)
+                    addGeofence(it,dataPic.date)
                     contentResolver.run {
                         val imgUri = insert(images, contentValues)
                         imgUri?.let {
