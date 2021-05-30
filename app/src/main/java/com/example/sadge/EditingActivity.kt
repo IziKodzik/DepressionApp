@@ -83,7 +83,7 @@ class EditingActivity : AppCompatActivity() {
         val mordo = Geofence.Builder().setExpirationDuration(Geofence.NEVER_EXPIRE)
             .setRequestId(LocalDate.now().toString())
             .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
-            .setCircularRegion(loci.latitude, loci.longitude, 500f).setRequestId(date).build()
+            .setCircularRegion(loci.latitude, loci.longitude, Shared.settings?.radius ?: 1000f).setRequestId(date).build()
         return GeofencingRequest.Builder()
             .addGeofence(mordo)
             .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)

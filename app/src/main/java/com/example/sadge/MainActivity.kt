@@ -74,7 +74,9 @@ class MainActivity : AppCompatActivity() {
         else
             requestLoc()
         picAdapter.refresh(this)
-
+        thread {
+            Shared.settings = Shared.db?.pics?.selectDefaultSettings()
+        }
     }
 
 

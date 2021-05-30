@@ -4,11 +4,12 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.sadge.model.MadgeSettings
 import com.example.sadge.model.PicDto
 
 @Database(
-    entities = [PicDto::class],
-    version = 1
+    entities = [PicDto::class,MadgeSettings::class],
+    version = 2
 
 )
 abstract class AppDatabase: RoomDatabase() {
