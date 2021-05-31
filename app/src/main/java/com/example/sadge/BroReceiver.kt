@@ -23,7 +23,6 @@ import kotlin.concurrent.thread
 class BroReceiver : BroadcastReceiver() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onReceive(context: Context?, intent: Intent?) {
-        Log.i("f", "nibbers")
         val notificationId = 69
         val notificationManager =
             context?.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -59,7 +58,7 @@ class BroReceiver : BroadcastReceiver() {
                 resultIntent.putExtra("note", it.note)
                 resultIntent.putExtra("id", it.date)
                 val stackBuilder: TaskStackBuilder = TaskStackBuilder.create(context)
-                stackBuilder.addParentStack(MainActivity::class.java)
+                stackBuilder.addParentStack(DisplayActivity::class.java)
                 stackBuilder.addNextIntent(resultIntent)
                 val resultPendingIntent: PendingIntent =
                     stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)

@@ -17,16 +17,13 @@ import java.time.LocalDateTime
 @Entity(tableName = "pic")
 data class PicDto(
     @PrimaryKey(autoGenerate = true)
-    var id: Long = 0,
-    var lon: Double,
-    var lat: Double,
-    var note: String,
-    var date: String
-
-
+    val id: Long = 0,
+    val lon: Double,
+    val lat: Double,
+    val note: String,
+    val date: String
     ){
-    @RequiresApi(Build.VERSION_CODES.O)
-    constructor():this(0,0.0,0.0,"", LocalDateTime.now().toString().replace('.','_').replace(":",""))
+//    constructor():this(0,0.0,0.0,"", LocalDateTime.now().toString().replace('.','_').replace(":",""))
 
     fun getBitmap():Bitmap? {
         return getBitmap(date)

@@ -9,7 +9,6 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Looper
-import android.util.Log
 import android.view.View
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
@@ -105,7 +104,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,

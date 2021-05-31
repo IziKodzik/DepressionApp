@@ -12,7 +12,6 @@ import android.hardware.camera2.*
 import android.media.ImageReader
 import android.os.Handler
 import android.os.HandlerThread
-import android.util.Log
 import android.util.Size
 import android.view.Surface
 import androidx.core.app.ActivityCompat
@@ -136,7 +135,10 @@ class DepressionUtil(
 
     fun acquire() {
 
-        val imageReader = ImageReader.newInstance(1280,1680, ImageFormat.JPEG, 1)
+        val size = characters?.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+            ?.getOutputSizes(ImageFormat.JPEG)?.last()?.let { Size(it.width, it.height) }
+            ?: Size(640*2, 840*2)
+        val imageReader = ImageReader.newInstance(size.width,size.height, ImageFormat.JPEG, 1)
         cameraDevice?.createCaptureSession(
             listOf(imageReader.surface),
             StateCallbackForAcquire(imageReader),
